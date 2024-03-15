@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime, timedelta
 
 # Student information
 student_info = """
@@ -41,18 +42,31 @@ df_students["Attendance Status"] = "Absence"
 
 # Function to display student list table
 
-# Changed to 'allow_output_mutation' to allow updating
-
 
 @st.cache(allow_output_mutation=True)
 def get_student_df():
     return df_students
+
+# Function to reset the table every 2 minutes
+
+
+def reset_table():
+    # Check if 2 minutes have passed since the last reset
+    if "last_reset" not in st.session_state:
+        st.session_state["last_reset"] = datetime.now()
+    elif datetime.now() - st.session_state["last_reset"] >= timedelta(minutes=2):
+        # Reset the table
+        st.session_state["last_reset"] = datetime.now()
+        df_students["Attendance Status"] = "Absence"
 
 # Main function to run the Streamlit app
 
 
 def main():
     st.title("Student Attendance System")
+
+    # Reset the table if needed
+    reset_table()
 
     df_students = get_student_df()
 
@@ -71,6 +85,7 @@ def main():
             df_students["ID"] == student_id), "Attendance Status"] = "Present"
         st.success("Attendance submitted successfully.")
         # No need to display the table again, as the sidebar table will automatically update
+
 
 if __name__ == "__main__":
     main()
