@@ -51,13 +51,8 @@ def get_student_df():
 
 
 def reset_table():
-    # Check if 2 minutes have passed since the last reset
-    if "last_reset" not in st.session_state:
-        st.session_state["last_reset"] = datetime.now()
-    elif datetime.now() - st.session_state["last_reset"] >= timedelta(minutes=2):
-        # Reset the table
-        st.session_state["last_reset"] = datetime.now()
-        df_students["Attendance Status"] = "Absence"
+    st.session_state.df_students["Attendance Status"] = "Absence"
+    st.experimental_rerun()
 
 # Main function to run the Streamlit app
 
@@ -85,6 +80,21 @@ def main():
             df_students["ID"] == student_id), "Attendance Status"] = "Present"
         st.success("Attendance submitted successfully.")
         # No need to display the table again, as the sidebar table will automatically update
+
+    # Implement restricted access to reset functionality using a form
+    with st.sidebar:
+        st.write("")  # Add some space at the top
+        st.subheader("Reset Attendance")
+        with st.form("reset_form"):
+            password = st.text_input("Enter the password:", type="password")
+            submit_button = st.form_submit_button("Reset Attendance")
+            if submit_button:
+                if password == "e20210635":  # Check if the entered password is correct
+                    reset_table()
+                    st.success("Attendance has been reset.")
+                else:
+                    st.error("Incorrect password.")
+        st.write("")  # Add some space at the bottom
 
 
 if __name__ == "__main__":
